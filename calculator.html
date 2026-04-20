@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交通安全违法行为行政处罚裁量基准计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- 数据定义 -->
+    <script>
+        const calculatorData = {
+            "violations": [
+                {
+                    "id": 1,
+                    "name": "饮酒后驾驶机动车",
+                    "hasAlcohol": true,
+                    "circumstances": [
+                        {
+                            "condition": "（一）酒精含量<50mg／100ml，裁量情节数≤0的",
+                            "punishment": "处暂扣6个月机动车驾驶证，并处1000以上1500以下罚款"
+                        },
+                        {
+                            "condition": "（二）具有下列情形之一的：1.酒精含量<50mg／100ml，裁量情节数≥1的；2.酒精含量≥50mg／100ml不足80mg／100ml的",
+                            "punishment": "处暂扣6个月机动车驾驶证，并处1500以上2000以下罚款"
+                        },
+                        {
+                            "condition": "（三）酒精含量≥80 mg／100ml尚不够刑事处罚的",
+                            "punishment": "处吊销机动车驾驶证，并处1500以上2000以下罚款"
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "name": "再次饮酒后驾驶机动车",
+                    "hasAlcohol": true,
+                    "circumstances": [
+                        {
+                            "condition": "（一）酒精含量<50mg／100ml，裁量情节数≤0的",
+                            "punishment": "处3日以下拘留，并处1000以上1500以下罚款，吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（二）具有下列情形之一的：1.酒精含量<50mg／100ml，裁量情节数=1的；2.酒精含量≥50mg／100ml不足80mg／100ml，裁量情节数≤1的",
+                            "punishment": "处3日以上7日以下拘留，并处1500以上2000以下罚款，吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（三）具有下列情形之一的：1.酒精含量<50mg／100ml，裁量情节数 >1的；2.酒精含量≥50mg／100ml不足80mg／100ml，裁量情节数≥2的",
+                            "punishment": "处7日以上10日以下拘留，并处1500以上2000以下罚款，吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（四）酒精含量≥80 mg／100ml尚不够刑事处罚的",
+                            "punishment": "处10日以下拘留，并处1500以上2000以下罚款，吊销机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 3,
+                    "name": "出具虚假机动车安全技术检验结果",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处检验费用五倍以上十倍以下罚款，对直接负责的主管人员和其他直接责任人员处二千元以上五千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处检验费用十倍以上十五倍以下罚款，对直接负责的主管人员和其他直接责任人员处五千元以上一万元以下罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处检验费用十五倍以上二十倍以下罚款，对直接负责的主管人员和其他直接责任人员处一万元以上二万元以下罚款，并撤销其检验资格"
+                        }
+                    ]
+                },
+                {
+                    "id": 4,
+                    "name": "伪造、变造或者使用伪造、变造的机动车登记证书、号牌、行驶证、驾驶证",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处十五日以下拘留，并处二千元以上五千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处十五日以下拘留，并处五千元以上一万元以下罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处十五日以下拘留，并处一万元以上二万元以下罚款"
+                        }
+                    ]
+                },
+                {
+                    "id": 5,
+                    "name": "伪造、变造或者使用伪造、变造的检验合格标志、保险标志",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处十日以下拘留，并处一千元以上三千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处十日以下拘留，并处三千元以上五千元以下罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处十日以下拘留，并处五千元以上一万元以下罚款"
+                        }
+                    ]
+                },
+                {
+                    "id": 6,
+                    "name": "使用其他车辆的机动车登记证书、号牌、行驶证、检验合格标志、保险标志",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二千元以上五千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处五千元以上一万元以下罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处一万元以上二万元以下罚款"
+                        }
+                    ]
+                },
+                {
+                    "id": 7,
+                    "name": "非法安装警报器、标志灯具",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处二千元罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并吊销机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 8,
+                    "name": "无有效机动车驾驶证驾驶机动车",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，并处五日以上十日以下拘留"
+                        },
+                        {
+                            "condition": "（四）裁量情节数=3的",
+                            "punishment": "处二千元罚款，并处十日以上十五日以下拘留"
+                        },
+                        {
+                            "condition": "（五）裁量情节数≥4的",
+                            "punishment": "处二千元罚款，并处十五日拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 9,
+                    "name": "将机动车交由无有效机动车驾驶证人员驾驶",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，可以并处吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款，可以并处吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，并处吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（四）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并处吊销机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 10,
+                    "name": "交通肇事逃逸",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，可以并处十五日以下拘留，吊销机动车驾驶证，且终生不得重新取得机动车驾驶证"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留，吊销机动车驾驶证，且终生不得重新取得机动车驾驶证"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，并处五日以上十日以下拘留，吊销机动车驾驶证，且终生不得重新取得机动车驾驶证"
+                        },
+                        {
+                            "condition": "（四）裁量情节数=3的",
+                            "punishment": "处二千元罚款，并处十日以上十五日以下拘留，吊销机动车驾驶证，且终生不得重新取得机动车驾驶证"
+                        },
+                        {
+                            "condition": "（五）裁量情节数≥4的",
+                            "punishment": "处二千元罚款，并处十五日拘留，吊销机动车驾驶证，且终生不得重新取得机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 11,
+                    "name": "机动车行驶超速50%以上（新增）",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，可以并处吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（二）裁量情节数≥1的",
+                            "punishment": "处二千元罚款，并处吊销机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 12,
+                    "name": "强迫机动车驾驶人违规驾驶机动车造成交通事故",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（四）裁量情节数=3的",
+                            "punishment": "处二千元罚款，并处五日以上十日以下拘留"
+                        },
+                        {
+                            "condition": "（五）裁量情节数≥4的",
+                            "punishment": "处二千元罚款，并处十日以上十五日以下拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 13,
+                    "name": "违反交通管制强行通行",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（四）裁量情节数=3的",
+                            "punishment": "处二千元罚款，并处五日以上十日以下拘留"
+                        },
+                        {
+                            "condition": "（五）裁量情节数≥4的",
+                            "punishment": "处二千元罚款，并处十日以上十五日以下拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 14,
+                    "name": "故意损毁、移动、涂改交通设施",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（四）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并处五日以上十五日以下拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 15,
+                    "name": "非法拦截、扣留机动车",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1的",
+                            "punishment": "处二千元罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数=2的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（四）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并处五日以上十五日以下拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 16,
+                    "name": "驾驶拼装机动车、驾驶报废机动车",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，并吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处二千元罚款，并吊销机动车驾驶证"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并处十五日以下拘留，并吊销机动车驾驶证"
+                        }
+                    ]
+                },
+                {
+                    "id": 17,
+                    "name": "驾驶与准驾车型不符的车辆、驾驶证超过有效期、违法记分达到十二分或者被公告停止使用期间仍驾驶机动车、持境外机动车驾驶证驾驶机动车",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处二百元以上二千元以下罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处二千元罚款，可以并处十五日以下拘留"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处二千元罚款，并处五日以上十五日以下拘留"
+                        }
+                    ]
+                },
+                {
+                    "id": 18,
+                    "name": "使用未取得校车标牌的车辆、使用未取得校车驾驶资格的人员",
+                    "hasAlcohol": false,
+                    "circumstances": [
+                        {
+                            "condition": "（一）裁量情节数≤0的",
+                            "punishment": "处一万元以上二万元以下罚款"
+                        },
+                        {
+                            "condition": "（二）裁量情节数=1或者2的",
+                            "punishment": "处二万元以上三万元以下罚款"
+                        },
+                        {
+                            "condition": "（三）裁量情节数≥3的",
+                            "punishment": "处三万元以上五万元以下罚款"
+                        }
+                    ]
+                }
+            ],
+            "light_circumstances": [
+                {
+                    "id": "light1",
+                    "name": "违法行为人已满十四周岁未满十八周岁的",
+                    "score": -1
+                },
+                {
+                    "id": "light2",
+                    "name": "主动投案，向公安机关如实陈述自己的违法行为的",
+                    "score": -1
+                },
+                {
+                    "id": "light3",
+                    "name": "主动消除或者减轻违法行为造成的财产损失或者人员伤亡等危害后果的",
+                    "score": -1
+                },
+                {
+                    "id": "light4",
+                    "name": "涉及摩托车、被鉴定为机动车属性的非标电动自行车或者低速电动三（四）轮车的",
+                    "score": -1
+                },
+                {
+                    "id": "light5",
+                    "name": "其他依法应当从轻行政处罚的",
+                    "score": -1
+                }
+            ],
+            "heavy_circumstances": [
+                {
+                    "id": "heavy1",
+                    "name": "涉及校车、中型以上载客载货汽车（不包括大型轿车）、危险化学品运输车辆的",
+                    "score": 1
+                },
+                {
+                    "id": "heavy2",
+                    "name": "本次违法行为发生前二年内有因同一种违法行为被处罚记录的",
+                    "score": 1
+                },
+                {
+                    "id": "heavy3",
+                    "name": "造成交通事故且负有事故责任的",
+                    "score": 2
+                },
+                {
+                    "id": "heavy4",
+                    "name": "造成人员重伤或者死亡的",
+                    "score": 3
+                },
+                {
+                    "id": "heavy5",
+                    "name": "其他法定从重情节或者其他应当认定为从重裁量情节的",
+                    "score": 1
+                }
+            ]
+        };
+    </script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 标题区域 -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-gavel text-blue-600 mr-3"></i>
+                交通安全违法行为行政处罚裁量基准计算器
+            </h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                杭州市公安局交通管理支队执法监督大队
+            </p>
+        </div>
+
+        <!-- 计算器主体 -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <!-- 违法类型选择 -->
+            <div class="mb-8">
+                <label for="violationType" class="block text-lg font-semibold text-gray-700 mb-3">
+                    <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
+                    选择违法类型
+                </label>
+                <div class="relative">
+                    <select id="violationType" class="w-full px-6 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 appearance-none">
+                        <option value="">请选择违法行为类型</option>
+                        <!-- 动态生成选项 -->
+                    </select>
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 情节选择区域 -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- 从轻情节 -->
+                <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-xl font-semibold text-green-700 mb-4">
+                        <i class="fas fa-arrow-down text-green-600 mr-2"></i>
+                        从轻裁量情节（可多选）
+                    </h3>
+                    <div id="lightCircumstances" class="space-y-3">
+                        <!-- 动态生成从轻情节选项 -->
+                    </div>
+                </div>
+
+                <!-- 从重情节 -->
+                <div class="bg-red-50 rounded-xl p-6 border border-red-200">
+                    <h3 class="text-xl font-semibold text-red-700 mb-4">
+                        <i class="fas fa-arrow-up text-red-600 mr-2"></i>
+                        从重裁量情节（可多选）
+                    </h3>
+                    <div id="heavyCircumstances" class="space-y-3">
+                        <!-- 动态生成从重情节选项 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 酒精值输入区域（仅在涉及酒精的违法行为时显示） -->
+            <div id="alcoholInputArea" class="mb-8 hidden">
+                <label for="alcoholValue" class="block text-lg font-semibold text-gray-700 mb-3">
+                    <i class="fas fa-wine-bottle text-purple-500 mr-2"></i>
+                    酒精含量 (mg/100ml)
+                </label>
+                <div class="relative">
+                    <input type="number" id="alcoholValue" min="0" max="200" step="0.1" 
+                        class="w-full px-6 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <span class="text-gray-500">mg/100ml</span>
+                    </div>
+                </div>
+                <div class="mt-2 flex justify-between text-sm text-gray-500">
+                    <span>饮酒驾驶: ≥20mg/100ml</span>
+                    <span>醉酒驾驶: ≥80mg/100ml</span>
+                </div>
+            </div>
+
+            <!-- 计算按钮 -->
+            <div class="text-center mb-8">
+                <button id="calculateBtn" class="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-calculator mr-2"></i>
+                    计算处罚标准
+                </button>
+            </div>
+
+            <!-- 裁量情节数显示 -->
+            <div id="scoreDisplay" class="mb-8 text-center hidden">
+                <div class="inline-block bg-gray-100 rounded-full px-8 py-3">
+                    <span class="text-lg font-semibold text-gray-700">裁量情节数: </span>
+                    <span id="totalScore" class="text-2xl font-bold text-blue-600">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果显示区域 -->
+        <div id="resultArea" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                处罚标准计算结果
+            </h2>
+            
+            <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500 mb-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">适用条件</h3>
+                <p id="applicableCondition" class="text-blue-700 leading-relaxed"></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">处罚标准</h3>
+                <p id="punishmentResult" class="text-gray-700 leading-relaxed text-lg"></p>
+            </div>
+
+        <!-- 说明区域 -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                杭州市公安局交通管理支队执法监督大队
+            </h2>
+            <div class="space-y-4 text-gray-700">
+                <p><strong>1. 裁量规则：</strong>根据违法行为的严重程度，将法定处罚幅度由轻到重划分为若干个裁量阶次。裁量阶次主要按照裁量情节数的多少予以确定。</p>
+                <p><strong>2. 情节计算：</strong>裁量情节数以从重裁量情节总数减去从轻裁量情节总数的方法计算。</p>
+                <p><strong>3. 从轻情节：</strong>包括未成年人、主动投案、主动消除危害后果等情形，每项从轻情节减1分。</p>
+                <p><strong>4. 从重情节：</strong>包括涉及特殊车辆、有违法记录、造成交通事故等情形，根据情节严重程度加1-3分不等。</p>
+                <p><strong>5. 酒精驾驶：</strong>饮酒驾驶（≥20mg/100ml）、醉酒驾驶（≥80mg/100ml）将根据酒精含量和情节数综合判定处罚标准。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let scoreChart = null;
+        let violationChart = null;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalculator();
+        });
+
+        function initializeCalculator() {
+            // 生成违法类型选项
+            const violationSelect = document.getElementById('violationType');
+            calculatorData.violations.forEach(violation => {
+                const option = document.createElement('option');
+                option.value = violation.id;
+                option.textContent = violation.name;
+                violationSelect.appendChild(option);
+            });
+
+            // 生成从轻情节选项
+            const lightContainer = document.getElementById('lightCircumstances');
+            calculatorData.light_circumstances.forEach(circumstance => {
+                const div = document.createElement('div');
+                div.className = 'flex items-start';
+                div.innerHTML = `
+                    <input type="checkbox" id="${circumstance.id}" value="${circumstance.score}" 
+                        class="mt-1 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <label for="${circumstance.id}" class="ml-3 text-gray-700">${circumstance.name}</label>
+                `;
+                lightContainer.appendChild(div);
+            });
+
+            // 生成从重情节选项
+            const heavyContainer = document.getElementById('heavyCircumstances');
+            calculatorData.heavy_circumstances.forEach(circumstance => {
+                const div = document.createElement('div');
+                div.className = 'flex items-start';
+                div.innerHTML = `
+                    <input type="checkbox" id="${circumstance.id}" value="${circumstance.score}" 
+                        class="mt-1 h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                    <label for="${circumstance.id}" class="ml-3 text-gray-700">${circumstance.name}</label>
+                `;
+                heavyContainer.appendChild(div);
+            });
+
+            // 事件监听
+            document.getElementById('violationType').addEventListener('change', handleViolationChange);
+            document.getElementById('calculateBtn').addEventListener('click', calculatePunishment);
+            
+            // 为所有复选框添加事件监听
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateCalculateButton);
+            });
+            
+            document.getElementById('alcoholValue').addEventListener('input', updateCalculateButton);
+        }
+
+        function handleViolationChange() {
+            const violationId = parseInt(document.getElementById('violationType').value);
+            const alcoholInputArea = document.getElementById('alcoholInputArea');
+            
+            // 检查是否是涉及酒精的违法行为
+            const violation = calculatorData.violations.find(v => v.id === violationId);
+            if (violation && violation.hasAlcohol) {
+                alcoholInputArea.classList.remove('hidden');
+            } else {
+                alcoholInputArea.classList.add('hidden');
+                document.getElementById('alcoholValue').value = '';
+            }
+            
+            updateCalculateButton();
+        }
+
+        function updateCalculateButton() {
+            const violationId = document.getElementById('violationType').value;
+            const calculateBtn = document.getElementById('calculateBtn');
+            
+            // 检查是否选择了违法类型
+            if (!violationId) {
+                calculateBtn.disabled = true;
+                return;
+            }
+            
+            // 检查是否是涉及酒精的违法行为，如果是则需要输入酒精值
+            const violation = calculatorData.violations.find(v => v.id === parseInt(violationId));
+            if (violation && violation.hasAlcohol) {
+                const alcoholValue = document.getElementById('alcoholValue').value;
+                calculateBtn.disabled = !alcoholValue;
+            } else {
+                calculateBtn.disabled = false;
+            }
+        }
+
+        function calculatePunishment() {
+            const violationId = parseInt(document.getElementById('violationType').value);
+            const violation = calculatorData.violations.find(v => v.id === violationId);
+            
+            if (!violation) {
+                alert('请选择违法类型');
+                return;
+            }
+
+            // 计算裁量情节数
+            let totalScore = 0;
+            
+            // 从轻情节
+            calculatorData.light_circumstances.forEach(circumstance => {
+                const checkbox = document.getElementById(circumstance.id);
+                if (checkbox.checked) {
+                    totalScore += parseInt(circumstance.score);
+                }
+            });
+            
+            // 从重情节
+            calculatorData.heavy_circumstances.forEach(circumstance => {
+                const checkbox = document.getElementById(circumstance.id);
+                if (checkbox.checked) {
+                    totalScore += parseInt(circumstance.score);
+                }
+            });
+
+            // 显示裁量情节数
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('scoreDisplay').classList.remove('hidden');
+
+            // 处理涉及酒精的违法行为
+            let applicableCondition = '';
+            let punishmentResult = '';
+            
+            if (violation.hasAlcohol) {
+                const alcoholValue = parseFloat(document.getElementById('alcoholValue').value);
+                
+                if (alcoholValue >= 80) {
+                    // 酒精含量≥80mg/100ml
+                    applicableCondition = violation.circumstances[2].condition;
+                    punishmentResult = violation.circumstances[2].punishment;
+                } else if (alcoholValue >= 50) {
+                    // 酒精含量≥50mg/100ml不足80mg/100ml
+                    applicableCondition = violation.circumstances[1].condition;
+                    punishmentResult = violation.circumstances[1].punishment;
+                } else {
+                    // 酒精含量<50mg/100ml
+                    if (totalScore <= 0) {
+                        applicableCondition = violation.circumstances[0].condition;
+                        punishmentResult = violation.circumstances[0].punishment;
+                    } else {
+                        applicableCondition = violation.circumstances[1].condition;
+                        punishmentResult = violation.circumstances[1].punishment;
+                    }
+                }
+            } else {
+                // 不涉及酒精的违法行为，根据情节数匹配处罚标准
+                if (violation.id === 3 || violation.id === 4 || violation.id === 5 || violation.id === 6 || violation.id === 7 || 
+                    violation.id === 16 || violation.id === 17 || violation.id === 18) {
+                    // 这些违法行为有3个裁量阶次
+                    if (totalScore <= 0) {
+                        applicableCondition = violation.circumstances[0].condition;
+                        punishmentResult = violation.circumstances[0].punishment;
+                    } else if (totalScore <= 2) {
+                        applicableCondition = violation.circumstances[1].condition;
+                        punishmentResult = violation.circumstances[1].punishment;
+                    } else {
+                        applicableCondition = violation.circumstances[2].condition;
+                        punishmentResult = violation.circumstances[2].punishment;
+                    }
+                } else if (violation.id === 9 || violation.id === 14 || violation.id === 15) {
+                    // 这些违法行为有4个裁量阶次
+                    if (totalScore <= 0) {
+                        applicableCondition = violation.circumstances[0].condition;
+                        punishmentResult = violation.circumstances[0].punishment;
+                    } else if (totalScore === 1) {
+                        applicableCondition = violation.circumstances[1].condition;
+                        punishmentResult = violation.circumstances[1].punishment;
+                    } else if (totalScore === 2) {
+                        applicableCondition = violation.circumstances[2].condition;
+                        punishmentResult = violation.circumstances[2].punishment;
+                    } else {
+                        applicableCondition = violation.circumstances[3].condition;
+                        punishmentResult = violation.circumstances[3].punishment;
+                    }
+                } else if (violation.id === 8 || violation.id === 10 || violation.id === 12 || violation.id === 13) {
+                    // 这些违法行为有5个裁量阶次
+                    if (totalScore <= 0) {
+                        applicableCondition = violation.circumstances[0].condition;
+                        punishmentResult = violation.circumstances[0].punishment;
+                    } else if (totalScore === 1) {
+                        applicableCondition = violation.circumstances[1].condition;
+                        punishmentResult = violation.circumstances[1].punishment;
+                    } else if (totalScore === 2) {
+                        applicableCondition = violation.circumstances[2].condition;
+                        punishmentResult = violation.circumstances[2].punishment;
+                    } else if (totalScore === 3) {
+                        applicableCondition = violation.circumstances[3].condition;
+                        punishmentResult = violation.circumstances[3].punishment;
+                    } else {
+                        applicableCondition = violation.circumstances[4].condition;
+                        punishmentResult = violation.circumstances[4].punishment;
+                    }
+                } else if (violation.id === 11) {
+                    // 这个违法行为有2个裁量阶次
+                    if (totalScore <= 0) {
+                        applicableCondition = violation.circumstances[0].condition;
+                        punishmentResult = violation.circumstances[0].punishment;
+                    } else {
+                        applicableCondition = violation.circumstances[1].condition;
+                        punishmentResult = violation.circumstances[1].punishment;
+                    }
+                }
+            }
+
+            // 显示结果
+            document.getElementById('applicableCondition').textContent = applicableCondition;
+            document.getElementById('punishmentResult').textContent = punishmentResult;
+            document.getElementById('resultArea').classList.remove('hidden');
+
+            // 生成图表
+            generateCharts(totalScore, violation);
+
+            // 滚动到结果区域
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateCharts(totalScore, violation) {
+            // 销毁旧图表
+            if (scoreChart) scoreChart.destroy();
+            if (violationChart) violationChart.destroy();
+
+            // 情节数分析图表
+            const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+            scoreChart = new Chart(scoreCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['从轻情节', '从重情节', '总情节数'],
+                    datasets: [{
+                        label: '情节分数',
+                        data: [
+                            calculateLightScore(),
+                            calculateHeavyScore(),
+                            totalScore
+                        ],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(59, 130, 246, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(59, 130, 246, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '情节分数分析',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 违法行为类型统计图表
+            const violationCtx = document.getElementById('violationChart').getContext('2d');
+            violationChart = new Chart(violationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已选类型', '其他类型'],
+                    datasets: [{
+                        data: [1, calculatorData.violations.length - 1],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(209, 213, 219, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(209, 213, 219, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '违法行为类型分布',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        function calculateLightScore() {
+            let score = 0;
+            calculatorData.light_circumstances.forEach(circumstance => {
+                const checkbox = document.getElementById(circumstance.id);
+                if (checkbox.checked) {
+                    score += Math.abs(parseInt(circumstance.score));
+                }
+            });
+            return score;
+        }
+
+        function calculateHeavyScore() {
+            let score = 0;
+            calculatorData.heavy_circumstances.forEach(circumstance => {
+                const checkbox = document.getElementById(circumstance.id);
+                if (checkbox.checked) {
+                    score += parseInt(circumstance.score);
+                }
+            });
+            return score;
+        }
+    </script>
+</body>
+</html>
